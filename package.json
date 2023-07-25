@@ -1,0 +1,22 @@
+{
+  "name": "contributors.svg",
+  "private": true,
+  "homepage": "https://github.com/gizmo-ds/contributors.svg",
+  "author": {
+    "name": "Gizmo",
+    "url": "https://github.com/gizmo-ds"
+  },
+  "license": "MIT",
+  "scripts": {
+    "prepare": "npx nitropack prepare",
+    "dev": "npx nitropack dev",
+    "build": "npx nitropack build",
+    "preview": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "@types/lodash-es": "^4.17.8",
+    "lodash-es": "^4.17.21",
+    "nano-jsx": "^0.0.37",
+    "nitropack": "latest"
+  }
+}
