@@ -28,6 +28,7 @@ Options:
 - `max` - Max contributor count, Default: `100`
 - `hide_border` - Hide border, Default: `false`
 - `border_color` - Color of border, Default: `#c0c0c0`
+- `maxage` - Browser cache time, measured in seconds, Default: `7200`.
 
 ## Demo
 
