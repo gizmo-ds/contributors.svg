@@ -20,6 +20,7 @@ Options:
 
 - `owner` - The account owner of the repository. The name is not case sensitive.
 - `repo` - The name of the repository without the .git extension. The name is not case sensitive.
+- `align` - Avatar alignment, `center` or `left`, Default: `center`
 - `width` - ViewBox width, Default: `800`
 - `margin` - ViewBox margin, Default: `8`
 - `size` - Avatar size, Default: `64`

@@ -26,6 +26,7 @@ export default eventHandler(async e => {
   const hideBorder = query.get('hide_border') === 'true';
   const borderColor = query.get('border_color') ?? '#c0c0c0';
   const maxage = parseInt(query.get('maxage') ?? '7200');
+  const align = query.get('align') ?? 'center';
 
   const { owner, repo } = e.context.params;
 
@@ -55,8 +56,16 @@ export default eventHandler(async e => {
 
       chunk(contributors, colMax).map((chunk, i) => {
         this.height += size / 2;
-        const offset =
-          (width - chunk.length * (size + pad)) / 2 + (size + pad) / 2;
+        const offset = (() => {
+          switch (align) {
+            case 'left':
+              return size / 2 + pad;
+            default:
+              return (
+                (width - chunk.length * (size + pad)) / 2 + (size + pad) / 2
+              );
+          }
+        })();
         chunk.map((c, j) => {
           const x = offset + (size + pad) * j;
           this.components.push(
