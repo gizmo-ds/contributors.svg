@@ -13,7 +13,7 @@ Generate an SVG image of contributors to keep your README.md synchronized.
 ## How to use
 
 ```markdown
-https://contributors.liuli.lol/{owner}/{repo}/contributors.svg
+https://contributors.aika.dev/{owner}/{repo}/contributors.svg
 ```
 
 Options:
@@ -34,10 +34,10 @@ Options:
 ## Demo
 
 ```markdown
-![Vite contributors](https://contributors.liuli.lol/vitejs/vite/contributors.svg?max=44)
+![Vite contributors](https://contributors.aika.dev/vitejs/vite/contributors.svg?max=44)
 ```
 
-![Vite contributors](https://contributors.liuli.lol/vitejs/vite/contributors.svg?max=44)
+![Vite contributors](https://contributors.aika.dev/vitejs/vite/contributors.svg?max=44)
 
 ## Deploy on your own
 
