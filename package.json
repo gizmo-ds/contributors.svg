@@ -15,8 +15,12 @@
   },
   "dependencies": {
     "@types/lodash-es": "^4.17.8",
+    "base64-js": "^1.5.1",
     "lodash-es": "^4.17.21",
     "nano-jsx": "^0.0.37",
     "nitropack": "latest"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231218.0"
   }
 }

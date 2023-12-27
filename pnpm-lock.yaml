@@ -8,6 +8,9 @@ dependencies:
   '@types/lodash-es':
     specifier: ^4.17.8
     version: 4.17.8
+  base64-js:
+    specifier: ^1.5.1
+    version: 1.5.1
   lodash-es:
     specifier: ^4.17.21
     version: 4.17.21
@@ -18,6 +21,11 @@ dependencies:
     specifier: latest
     version: 2.5.2
 
+devDependencies:
+  '@cloudflare/workers-types':
+    specifier: ^4.20231218.0
+    version: 4.20231218.0
+
 packages:
 
   /@cloudflare/kv-asset-handler@0.3.0:
@@ -25,6 +33,10 @@ packages:
     dependencies:
       mime: 3.0.0
     dev: false
+
+  /@cloudflare/workers-types@4.20231218.0:
+    resolution: {integrity: sha512-Vs1FKjfUjXYGbCsXzkl+ITp0Iyb6QiW6+vTERTNThC+v96T0IvPVAioH4tT20rXwoxAfxh380mAaxYtTrJUNVg==}
+    dev: true
 
   /@esbuild/android-arm64@0.18.16:
     resolution: {integrity: sha512-wsCqSPqLz+6Ov+OM4EthU43DyYVVyfn15S4j1bJzylDpc1r1jZFFfJQNfDuT8SlgwuqpmpJXK4uPlHGw6ve7eA==}

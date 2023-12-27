@@ -1,6 +1,11 @@
 import { h, renderSSR, Component } from 'nano-jsx';
 import { chunk } from 'lodash-es';
 import { fromByteArray as base64 } from 'base64-js';
+import { storage } from '@/storage';
+
+const cacheTTL = process.env.CACHE_TTL
+  ? parseInt(process.env.CACHE_TTL)
+  : 60 * 60 * 24 * 3; // default 3 days
 
 interface Contributor {
   login: string;
@@ -27,6 +32,7 @@ export default eventHandler(async e => {
   const borderColor = query.get('border_color') ?? '#c0c0c0';
   const maxage = parseInt(query.get('maxage') ?? '7200');
   const align = query.get('align') ?? 'center';
+  const noCache = query.get('no_cache') === 'true';
 
   const { owner, repo } = e.context.params;
 
@@ -42,7 +48,7 @@ export default eventHandler(async e => {
   if (contributors.length > max) contributors = contributors.slice(0, max);
 
   contributors = contributors.sort((a, b) => b.contributions - a.contributions);
-  contributors = await resolveAvatars(contributors, size);
+  contributors = await resolveAvatars(contributors, size, noCache);
 
   class SVG extends Component {
     height = 0;
@@ -127,16 +133,30 @@ export default eventHandler(async e => {
   );
 });
 
-function resolveAvatars(contributors: Contributor[], size: number) {
+function resolveAvatars(
+  contributors: Contributor[],
+  size: number,
+  noCache = false
+) {
   return Promise.all(
     contributors.map(async c => {
       const u = new URL(c.avatar_url);
       u.searchParams.set('size', size.toString());
+      if (!noCache) {
+        const cacheAvatar = await storage.getItem<string | null>(
+          c.id.toString()
+        );
+        if (cacheAvatar) {
+          c.avatar_url = cacheAvatar;
+          return c;
+        }
+      }
       const data = await fetch(u.toString()).then(async resp => ({
         contentType: resp.headers.get('content-type'),
         data: new Uint8Array(await resp.arrayBuffer())
       }));
       c.avatar_url = `data:${data.contentType};base64,${base64(data.data)}`;
+      await storage.setItem(c.id.toString(), c.avatar_url, { ttl: cacheTTL });
       return c;
     })
   );

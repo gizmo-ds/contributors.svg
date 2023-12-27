@@ -51,4 +51,4 @@ Environment variables
 
 ### On other platforms
 
-[Deploy on other platforms](https://nitro.unjs.io/deploy/providers/deno)
+[Deploy on other platforms](https://nitro.unjs.io/deploy)
