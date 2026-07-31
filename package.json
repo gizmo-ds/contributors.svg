@@ -22,5 +22,6 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250725.0"
-  }
+  },
+  "packageManager": "pnpm@11.5.2"
 }
