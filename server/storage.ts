@@ -15,8 +15,8 @@ if (env.CACHE_CF_KV_BINDING && isSet(env.CACHE_CF_KV_BINDING.trim()))
     binding: env.CACHE_CF_KV_BINDING.trim()
   });
 // Deno KV
-if (env.DENO_KV_PATH && env.DENO_KV_PATH.trim() !== '' && isDeno())
-  driver = denoKvDriver({ path: env.DENO_KV_PATH.trim() });
+if (env.CACHE_DENO_KV_PATH && env.CACHE_DENO_KV_PATH.trim() !== '' && isDeno())
+  driver = denoKvDriver({ path: env.CACHE_DENO_KV_PATH.trim() });
 // Vercel Runtime Cache
 if (env.VERCEL_RUNTIME_CACHE_ENABLE === 'true')
   driver = vercelRuntimeCacheDriver({});
