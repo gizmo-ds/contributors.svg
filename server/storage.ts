@@ -1,10 +1,11 @@
 import { createStorage, type Driver } from 'unstorage';
+import { isDeno, isSet } from './utils';
 
 import memoryDriver from 'unstorage/drivers/memory';
 import denoKvDriver from 'unstorage/drivers/deno-kv';
 import vercelRuntimeCacheDriver from 'unstorage/drivers/vercel-runtime-cache';
 import cloudflareKVBindingDriver from 'unstorage/drivers/cloudflare-kv-binding';
-import { isDeno, isSet } from './utils';
+import netlifyBlobsDriver from 'unstorage/drivers/netlify-blobs';
 
 let driver: Driver = memoryDriver();
 const env = process.env;
@@ -20,6 +21,9 @@ if (env.CACHE_DENO_KV_PATH && env.CACHE_DENO_KV_PATH.trim() !== '' && isDeno())
 // Vercel Runtime Cache
 if (env.VERCEL_RUNTIME_CACHE_ENABLE === 'true')
   driver = vercelRuntimeCacheDriver({});
+// Netlify Blobs
+if (env.NETLIFY_BLOBS_NAME && env.NETLIFY_BLOBS_NAME.trim() !== '')
+  driver = netlifyBlobsDriver({ name: env.NETLIFY_BLOBS_NAME.trim() });
 
 console.debug('Storage:', driver.name);
 

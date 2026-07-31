@@ -141,8 +141,6 @@ function resolveAvatars(
 ) {
   return Promise.all(
     contributors.map(async c => {
-      console.log(c.id, await storage.hasItem(c.id.toString()));
-
       const u = new URL(c.avatar_url);
       u.searchParams.set('size', size.toString());
       if (!noCache) {
@@ -181,7 +179,7 @@ async function listRepositoryContributors(
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28'
   };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (token && token !== '') headers['Authorization'] = `Bearer ${token}`;
   return (await fetch(
     `https://api.github.com/repos/${owner}/${repo}/contributors?${query.toString()}`,
     { headers }
