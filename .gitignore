@@ -6,3 +6,4 @@ node_modules
 .avatar-cache
 .vercel
 .env
+.env*
