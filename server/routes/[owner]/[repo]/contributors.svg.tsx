@@ -1,12 +1,15 @@
-import { defineHandler } from 'nitro';
+import { defineCachedHandler } from 'nitro/cache';
 import { fromByteArray as base64 } from 'base64-js';
 import { Component, renderSSR } from 'nano-jsx';
 import { chunk } from 'lodash-es';
 import { storage } from '~/server/storage';
+import { homepage } from '~/package.json';
 
 const cacheTTL = process.env.CACHE_TTL
   ? parseInt(process.env.CACHE_TTL)
   : 60 * 60 * 24 * 3; // default 3 days
+
+const UserAgent = `Contributors-SVG (${homepage}})`;
 
 interface Contributor {
   login: string;
@@ -19,136 +22,140 @@ interface Contributor {
   contributions: number;
 }
 
-export default defineHandler(async event => {
-  const query = new URL(event.req.url).searchParams;
+export default defineCachedHandler(
+  async event => {
+    const query = new URL(event.req.url).searchParams;
 
-  const width = parseInt(query.get('width') ?? '800');
-  const bot = query.get('bot') === 'true';
-  const pad = parseInt(query.get('pad') ?? '8');
-  const margin = parseInt(query.get('margin') ?? '8');
-  const size = parseInt(query.get('size') ?? '64');
-  const max = parseInt(query.get('max') ?? '100');
-  const hideBorder = query.get('hide_border') === 'true';
-  const borderColor = query.get('border_color') ?? '#c0c0c0';
-  const maxage = parseInt(query.get('maxage') ?? '7200');
-  const align = query.get('align') ?? 'center';
-  const noCache = query.get('no_cache') === 'true';
+    const width = parseInt(query.get('width') ?? '800');
+    const bot = query.get('bot') === 'true';
+    const pad = parseInt(query.get('pad') ?? '8');
+    const margin = parseInt(query.get('margin') ?? '8');
+    const size = parseInt(query.get('size') ?? '64');
+    const max = parseInt(query.get('max') ?? '100');
+    const hideBorder = query.get('hide_border') === 'true';
+    const borderColor = query.get('border_color') ?? '#c0c0c0';
+    const maxage = parseInt(query.get('maxage') ?? '7200');
+    const align = query.get('align') ?? 'center';
+    const noCache = query.get('no_cache') === 'true';
 
-  const { owner, repo } = event.context.params!!;
+    const { owner, repo } = event.context.params!!;
 
-  let contributors: Contributor[] = [];
-  const perPage = max > 100 ? 100 : max;
-  let page = 1;
-  while (contributors.length < max) {
-    let list = await listRepositoryContributors(owner, repo, page, perPage);
-    page++;
-    contributors.push(...(bot ? list : list.filter(c => c.type !== 'Bot')));
-    if (list.length < perPage) break;
-  }
-  if (contributors.length > max) contributors = contributors.slice(0, max);
+    let contributors: Contributor[] = [];
+    const perPage = max + 10 > 100 ? 100 : max + 10;
+    let page = 1;
+    while (contributors.length < max) {
+      let list = await listRepositoryContributors(owner, repo, page, perPage);
+      page++;
+      contributors.push(...(bot ? list : list.filter(c => c.type !== 'Bot')));
+      if (list.length < perPage) break;
+    }
+    if (contributors.length > max) contributors = contributors.slice(0, max);
 
-  contributors = contributors.sort((a, b) => b.contributions - a.contributions);
-  contributors = await resolveAvatars(contributors, size, noCache);
+    contributors = contributors.sort(
+      (a, b) => b.contributions - a.contributions
+    );
+    contributors = await resolveAvatars(contributors, size, noCache);
 
-  event.res.headers.set('accept-encoding', 'br');
-  event.res.headers.set('content-type', 'image/svg+xml');
-  event.res.headers.set(
-    'cache-control',
-    `max-age=${maxage}, s-maxage=${maxage}`
-  );
+    event.res.headers.set('accept-encoding', 'br');
+    event.res.headers.set('content-type', 'image/svg+xml');
+    event.res.headers.set(
+      'cache-control',
+      `max-age=${maxage}, s-maxage=${maxage}`
+    );
 
-  class SVG extends Component {
-    height = 0;
-    components = [] as Component[];
+    class SVG extends Component {
+      height = 0;
+      components = [] as Component[];
 
-    override render(_update?: any): HTMLElement | void {
-      this.height += margin;
+      override render(_update?: any): HTMLElement | void {
+        this.height += margin;
 
-      const colMax = Math.floor((width - margin * 2 + pad) / (size + pad));
-      const rowCount = Math.ceil(contributors.length / colMax);
+        const colMax = Math.floor((width - margin * 2 + pad) / (size + pad));
+        const rowCount = Math.ceil(contributors.length / colMax);
 
-      chunk(contributors, colMax).map((chunk, i) => {
-        this.height += size / 2;
-        const offset = (() => {
-          switch (align) {
-            case 'left':
-              return size / 2 + pad;
-            default:
-              return (
-                (width - chunk.length * (size + pad)) / 2 + (size + pad) / 2
-              );
-          }
-        })();
-        chunk.map((c, j) => {
-          const x = offset + (size + pad) * j;
-          this.components.push(
-            <pattern
-              id={`avatar_${c.id}`}
-              x={x - size / 2}
-              y={this.height - size / 2}
-              width={size}
-              height={size}
-              patternUnits="userSpaceOnUse"
-            >
-              <image
-                x={0}
-                y={0}
+        chunk(contributors, colMax).map((chunk, i) => {
+          this.height += size / 2;
+          const offset = (() => {
+            switch (align) {
+              case 'left':
+                return size / 2 + pad;
+              default:
+                return (
+                  (width - chunk.length * (size + pad)) / 2 + (size + pad) / 2
+                );
+            }
+          })();
+          chunk.map((c, j) => {
+            const x = offset + (size + pad) * j;
+            this.components.push(
+              <pattern
+                id={`avatar_${c.id}`}
+                x={x - size / 2}
+                y={this.height - size / 2}
                 width={size}
                 height={size}
-                xlink:href={c.avatar_url}
+                patternUnits="userSpaceOnUse"
+              >
+                <image
+                  x={0}
+                  y={0}
+                  width={size}
+                  height={size}
+                  xlink:href={c.avatar_url}
+                />
+              </pattern>
+            );
+            this.components.push(
+              <circle
+                r={size / 2}
+                cx={x}
+                cy={this.height}
+                fill={`url(#avatar_${c.id})`}
+                stroke={borderColor}
+                stroke-width={hideBorder ? 0 : 1}
               />
-            </pattern>
-          );
-          this.components.push(
-            <circle
-              r={size / 2}
-              cx={x}
-              cy={this.height}
-              fill={`url(#avatar_${c.id})`}
-              stroke={borderColor}
-              stroke-width={hideBorder ? 0 : 1}
-            />
-          );
+            );
+          });
+          this.height += size / 2;
+          if (i < rowCount - 1) this.height += pad;
         });
-        this.height += size / 2;
-        if (i < rowCount - 1) this.height += pad;
-      });
 
-      this.height += margin;
-      return (
-        <svg
-          width={width}
-          height={this.height}
-          viewBox={`0 0 ${width} ${this.height}`}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-        >
-          {this.components}
-        </svg>
-      );
+        this.height += margin;
+        return (
+          <svg
+            width={width}
+            height={this.height}
+            viewBox={`0 0 ${width} ${this.height}`}
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+          >
+            {this.components}
+          </svg>
+        );
+      }
     }
-  }
 
-  return (
-    '<!-- Generated by gizmo-ds/contributors.svg -->\n' + renderSSR(() => SVG)
-  );
-});
+    return `<!-- Generated by gizmo-ds/contributors.svg -->\n${renderSSR(() => SVG)}`;
+  },
+  { maxAge: 60 * 5, allowQuery: true }
+);
 
-function resolveAvatars(
+async function resolveAvatars(
   contributors: Contributor[],
   size: number,
   noCache = false
 ) {
+  let cachedAvatars = await storage.getItems<string | null>(
+    contributors.map(c => c.id.toString())
+  );
   return Promise.all(
     contributors.map(async c => {
       const u = new URL(c.avatar_url);
       u.searchParams.set('size', size.toString());
       if (!noCache) {
-        const cacheAvatar = await storage.getItem<string | null>(
-          c.id.toString()
-        );
-        if (cacheAvatar) {
-          c.avatar_url = cacheAvatar;
+        const avatar = cachedAvatars.find(v => v.key === c.id.toString());
+        if (avatar && avatar.value) {
+          c.avatar_url = avatar.value;
           return c;
         }
       }
@@ -177,7 +184,8 @@ async function listRepositoryContributors(
   });
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28'
+    'X-GitHub-Api-Version': '2026-03-10',
+    'User-Agent': UserAgent
   };
   if (token && token !== '') headers['Authorization'] = `Bearer ${token}`;
   return (await fetch(
