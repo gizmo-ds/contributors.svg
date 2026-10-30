@@ -3,11 +3,6 @@ export function isSet(...s: string[]): boolean {
   return s.reduce((a, b) => (!a ? false : b.length > 0), true);
 }
 
-export function isDeno() {
-  //@ts-ignore
-  return typeof Deno !== 'undefined';
-}
-
 export function isVercel() {
   return process.env.VERCEL === '1';
 }
