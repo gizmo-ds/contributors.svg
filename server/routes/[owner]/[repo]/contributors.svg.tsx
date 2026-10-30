@@ -4,6 +4,7 @@ import { Component, renderSSR } from 'nano-jsx';
 import { chunk } from 'lodash-es';
 import { storage } from '~/server/storage';
 import { homepage } from '~/package.json';
+import { intParam } from '~/server/utils';
 
 const cacheTTL = process.env.CACHE_TTL
   ? parseInt(process.env.CACHE_TTL)
@@ -30,8 +31,8 @@ export default defineCachedHandler(
     const bot = query.get('bot') === 'true';
     const pad = parseInt(query.get('pad') ?? '8');
     const margin = parseInt(query.get('margin') ?? '8');
-    const size = parseInt(query.get('size') ?? '64');
-    const max = parseInt(query.get('max') ?? '100');
+    const size = intParam(query, 'size', 64, 1, process.env.MAX_SIZE);
+    const max = intParam(query, 'max', 44, 1, process.env.MAX_ITEMS);
     const hideBorder = query.get('hide_border') === 'true';
     const borderColor = query.get('border_color') ?? '#c0c0c0';
     const maxage = parseInt(query.get('maxage') ?? '7200');
@@ -146,14 +147,14 @@ async function resolveAvatars(
   noCache = false
 ) {
   let cachedAvatars = await storage.getItems<string | null>(
-    contributors.map(c => c.id.toString())
+    contributors.map(c => `av_${size}_${c.id}`)
   );
   return Promise.all(
     contributors.map(async c => {
       const u = new URL(c.avatar_url);
       u.searchParams.set('size', size.toString());
       if (!noCache) {
-        const avatar = cachedAvatars.find(v => v.key === c.id.toString());
+        const avatar = cachedAvatars.find(v => v.key === `av_${size}_${c.id}`);
         if (avatar && avatar.value) {
           c.avatar_url = avatar.value;
           return c;
@@ -164,7 +165,9 @@ async function resolveAvatars(
         data: new Uint8Array(await resp.arrayBuffer())
       }));
       c.avatar_url = `data:${data.contentType};base64,${base64(data.data)}`;
-      await storage.setItem(c.id.toString(), c.avatar_url, { ttl: cacheTTL });
+      await storage.setItem(`av_${size}_${c.id}`, c.avatar_url, {
+        ttl: cacheTTL
+      });
       return c;
     })
   );
