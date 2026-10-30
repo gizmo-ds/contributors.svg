@@ -2,7 +2,8 @@
 
 # contributors.svg
 
-[![爱发电](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fafdian.net%2Fapi%2Fuser%2Fget-profile%3Fuser_id%3D75e549844b5111ed8df552540025c377&query=%24.data.user.name&label=%E7%88%B1%E5%8F%91%E7%94%B5&color=%23946ce6)](https://afdian.net/a/gizmo)
+[![爱发电](https://img.shields.io/badge/Gizmo-blue?logo=afdian&logoColor=%23ffffff&label=%E7%88%B1%E5%8F%91%E7%94%B5&color=%23946ce6
+)](https://ifdian.net/a/gizmo)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-%E2%9D%A4%EF%B8%8F-blue?logo=kofi&color=%23fff)](https://ko-fi.com/gizmo_)
 [![License](https://img.shields.io/github/license/gizmo-ds/contributors.svg.svg)](./LICENSE)
 
